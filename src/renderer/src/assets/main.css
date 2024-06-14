@@ -1,0 +1,184 @@
+@import './base.css';
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  background-size: cover;
+  user-select: none;
+}
+
+code {
+  font-weight: 600;
+  padding: 3px 5px;
+  border-radius: 2px;
+  background-color: var(--color-background-mute);
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    SF Mono,
+    Menlo,
+    Consolas,
+    Liberation Mono,
+    monospace;
+  font-size: 85%;
+}
+
+#root {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.container {
+  position: relative;
+}
+
+.form {
+  width: 500px;
+  background-color: #fff;
+  padding: 40px;
+  border-radius: 10px;
+  box-shadow:
+    rgba(17, 17, 26, 0.1) 0px 8px 24px,
+    rgba(17, 17, 26, 0.1) 0px 16px 56px,
+    rgba(17, 17, 26, 0.1) 0px 24px 80px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-item {
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  outline: none;
+  box-shadow:
+    rgba(0, 0, 0, 0.16) 0px 10px 36px 0px,
+    rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
+}
+
+.form-item::placeholder {
+  color: #00000039;
+}
+
+.title {
+  font-weight: 600;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+/* input upload */
+.formbold-mb-5 {
+  margin-bottom: 20px;
+}
+
+.formbold-file-input input {
+  display: none;
+}
+
+.formbold-file-input label {
+  border: 1px dashed #bfbfbf;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 48px;
+  text-align: center;
+  cursor: pointer;
+  font-weight: bold;
+  border-radius: 10px;
+}
+
+.formbold-drop-file {
+  display: block;
+  font-weight: 600;
+  color: #07074d;
+  font-size: 24px;
+}
+
+.formbold-or {
+  font-weight: 500;
+  font-size: 12px;
+  color: #6b7280;
+  display: block;
+  margin: 8px;
+}
+
+.formbold-browse {
+  font-weight: 500;
+  font-size: 12px;
+  color: #07074d;
+  display: inline-block;
+  padding: 8px 28px;
+  border-radius: 10px;
+}
+
+#line {
+  border-top: 1px dashed #00000030;
+  margin-bottom: 20px;
+}
+
+.file-name {
+  font-size: 14px;
+  color: #09a955;
+  font-weight: bold;
+}
+
+.btn-submit {
+  width: 300px;
+  margin: 24px auto 0 auto;
+  border: none;
+  background-color: #008dff;
+  outline: none;
+  cursor: pointer;
+  padding: 12px;
+  border-radius: 8px;
+  font-weight: bolder;
+  color: #fff;
+}
+
+/* loading */
+
+.loading {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+  display: flex;
+  display: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #000000b6;
+}
+
+.waviy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-animation: bounce 0.4s ease infinite alternate;
+}
+
+.waviy span {
+  color: #fff;
+  margin: 0px 4px;
+  font-weight: bold;
+}
+
+@-webkit-keyframes bounce {
+  0% {
+    text-shadow:
+      0 5px 0 #ccc,
+      0 2px 3px rgba(0, 0, 0, 1);
+  }
+  100% {
+    transform: translateY(-20px);
+    text-shadow:
+      0 50px 0 #ccccccb8,
+      0 0px 20px rgba(0, 0, 0, 0.8);
+    filter: blur(1px);
+  }
+}
