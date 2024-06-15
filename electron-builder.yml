@@ -1,5 +1,5 @@
 appId: com.electron.app
-productName: keyword-mangtools
+productName: crawl-clothes-tool
 directories:
   buildResources: build
 files:
@@ -11,7 +11,7 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: keyword-mangtools
+  executableName: crawl-clothes-tool
 nsis:
   artifactName: ${name}-setup.${ext}
   shortcutName: ${productName}
