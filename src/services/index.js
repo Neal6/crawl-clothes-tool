@@ -17,21 +17,22 @@ export const startCheck = async (params) => {
       deviceScaleFactor: 1
     })
     page.setUserAgent(ua)
-    if (
-      stores.filter((s) =>
-        s.store.includes('https://www.etsy.com', {
-          waitUntil: 'domcontentloaded'
-        })
-      ).length > 0
-    ) {
-      await page.goto('https://neal6.github.io/bypass-esty/')
+    const isETSY =
+      stores.filter((s) => {
+        return s.store.includes('https://www.etsy.com')
+      }).length > 0
+    const isAMZ =
+      stores.filter((s) => {
+        return s.store.includes('https://www.amazon.com')
+      }).length > 0
+    if (isETSY || isAMZ) {
+      await page.goto(
+        `https://neal6.github.io/bypass-esty/?${isAMZ ? 'amz=true&' : ''}${isETSY ? 'etsy=true&' : ''}`
+      )
       let isPageChanged = false
       while (!isPageChanged) {
-        if (
-          page.url().toString() === 'https://www.etsy.com/?ref=lgo/' ||
-          page.url().toString() === 'https://neal6.github.io/bypass-esty/'
-        ) {
-          await page.waitForTimeout(1000)
+        if (page.url().toString().includes('https://neal6.github.io/bypass-esty')) {
+          await delay(1000)
         } else {
           isPageChanged = true
         }
@@ -42,33 +43,97 @@ export const startCheck = async (params) => {
       let isDoneStore = false
       let pageCheck = 1
       let productsThisStore = []
+
+      const websiteName = getWebsiteFromUrl(stores[index]?.store)
       while (!isDoneStore) {
         const store = removeQueryPageAndAddFirst(stores[index]?.store?.toString()?.trim()).replace(
           /page=[0-9]+/,
           `page=${pageCheck}`
         )
-        const websiteName = getWebsiteFromUrl(store)
-        await page.goto(store, {
-          waitUntil: 'domcontentloaded'
-        })
+        try {
+          await page.goto(store, {
+            waitUntil: 'domcontentloaded'
+          })
+        } catch (error) {}
 
-        const products = await page.evaluate(() => {
-          const imgProducts = document.querySelectorAll(
-            '#sh-wider-items .responsive-listing-grid img.wt-image'
-          )
-          const productsDetail = []
-          if (imgProducts.length > 0) {
-            for (let index = 0; index < imgProducts.length; index++) {
-              const element = imgProducts[index]
-              productsDetail.push({
-                title: element.alt,
-                id: element.closest('a.listing-link').getAttribute('data-listing-id'),
-                link: element.closest('a.listing-link').getAttribute('href')
-              })
+        const products = await page.evaluate((ws) => {
+          switch (ws) {
+            case 'ET': {
+              const imgProducts = document.querySelectorAll(
+                '#sh-wider-items .responsive-listing-grid img.wt-image'
+              )
+              const productsDetail = []
+              if (imgProducts.length > 0) {
+                for (let index = 0; index < imgProducts.length; index++) {
+                  const element = imgProducts[index]
+                  productsDetail.push({
+                    title: element.alt,
+                    id: element.closest('a.listing-link')?.getAttribute('data-listing-id'),
+                    link: element.closest('a.listing-link')?.getAttribute('href'),
+                    imgInList: element?.src || ''
+                  })
+                }
+              }
+              return productsDetail
             }
+            case 'RE': {
+              const imgProducts = document.querySelectorAll(
+                '#SearchResultsGrid [class^=styles__card] [class^=styles__imageDiv] img'
+              )
+              const productsDetail = []
+              if (imgProducts.length > 0) {
+                for (let index = 0; index < imgProducts.length; index++) {
+                  const element = imgProducts[index]
+                  productsDetail.push({
+                    title: element.alt,
+                    id: element
+                      .closest('a[class^=styles__link]')
+                      ?.getAttribute('href')
+                      .split('/')
+                      .at(-1)
+                      .split('.')[0],
+                    link: element.closest('a[class^=styles__link]')?.getAttribute('href')
+                  })
+                }
+              }
+              return productsDetail
+            }
+            case 'TE': {
+              const imgProducts = document.querySelectorAll(
+                '.m-store__tiles .m-tiles__tile picture img'
+              )
+              const productsDetail = []
+              if (imgProducts.length > 0) {
+                for (let index = 0; index < imgProducts.length; index++) {
+                  const element = imgProducts[index]
+                  productsDetail.push({
+                    title: element.alt,
+                    id: element.closest('.m-tiles__tile')?.getAttribute('data-id'),
+                    link: element.closest('a').href
+                  })
+                }
+              }
+              return productsDetail
+            }
+            case 'AM': {
+              const imgProducts = document.querySelectorAll('.s-product-image-container .s-image')
+              const productsDetail = []
+              if (imgProducts.length > 0) {
+                for (let index = 0; index < imgProducts.length; index++) {
+                  const element = imgProducts[index]
+                  productsDetail.push({
+                    title: element.alt,
+                    id: element.closest('.s-result-item')?.getAttribute('data-asin'),
+                    link: element.closest('.a-link-normal').href
+                  })
+                }
+              }
+              return productsDetail
+            }
+            default:
+              break
           }
-          return productsDetail
-        })
+        }, websiteName)
         productsThisStore = [
           ...productsThisStore,
           ...products.map((product) => ({
@@ -87,15 +152,75 @@ export const startCheck = async (params) => {
       }
       for (let index = 0; index < productsThisStore.length; index++) {
         const element = productsThisStore[index]
-        await page.goto(element.link, {
-          waitUntil: 'domcontentloaded'
-        })
-        const imgProduct = await page.evaluate(() => {
-          return document.querySelector('#photos ul img.carousel-image')?.src || ''
-        })
-        productsThisStore[index].imgLink = imgProduct
+        if (websiteName === 'ET') {
+          productsThisStore[index].imgLink =
+            element.imgInList.split('/c/')[0] +
+            '/r/il/' +
+            element.imgInList.split('/il/')[1].replace(/_[0-9]+x[0-9]+/, '_794xN')
+          continue
+        }
+        try {
+          await page.goto('https://www.google.com/')
+          await page.goto(element.link, {
+            waitUntil: 'domcontentloaded'
+          })
+          const imgProduct = await page.evaluate((ws) => {
+            switch (ws) {
+              case 'ET': {
+                return document.querySelector('#photos ul img.carousel-image')?.src || ''
+              }
+              case 'RE': {
+                return (
+                  document.querySelector('[data-testid=product-preview-image] picture img')?.src ||
+                  ''
+                )
+              }
+              case 'TE': {
+                return document.querySelector('.jsProductMainImage')?.src || ''
+              }
+              case 'AM': {
+                const imgSplit = document.querySelector('#landingImage')?.src?.split('.')
+                imgSplit?.splice(imgSplit.length - 2, 1)
+                return imgSplit?.join('.') || ''
+              }
+              default:
+                break
+            }
+          }, websiteName)
+          productsThisStore[index].imgLink = imgProduct
+          continue
+        } catch (error) {
+          if (websiteName === 'ET') {
+            await delay(2000)
+          }
+          const imgProduct = await page.evaluate((ws) => {
+            switch (ws) {
+              case 'ET': {
+                return document.querySelector('#photos ul img.carousel-image')?.src || ''
+              }
+              case 'RE': {
+                return (
+                  document.querySelector('[data-testid=product-preview-image] picture img')?.src ||
+                  ''
+                )
+              }
+              case 'TE': {
+                return document.querySelector('.jsProductMainImage')?.src || ''
+              }
+              case 'AM': {
+                const imgSplit = document.querySelector('#landingImage')?.src?.split('.')
+                imgSplit?.splice(imgSplit.length - 2, 1)
+                return imgSplit?.join('.') || ''
+              }
+              default:
+                break
+            }
+          }, websiteName)
+          productsThisStore[index].imgLink = imgProduct
+          continue
+        }
       }
-      allProduct = [...allProduct, ...productsThisStore]
+      allProduct = [...allProduct, [...productsThisStore]]
     }
     await browser.close()
 
@@ -104,7 +229,7 @@ export const startCheck = async (params) => {
       products: allProduct
     }
   } catch (error) {
-    await browser.close()
+    // await browser.close()
     console.log(error)
     return {
       status: 400
@@ -126,8 +251,18 @@ const removeQueryPageAndAddFirst = (url) => {
 
 const getWebsiteFromUrl = (url) => {
   if (url.includes('https://www.etsy.com')) {
-    return 'ES'
+    return 'ET'
+  } else if (url.includes('https://www.redbubble.com')) {
+    return 'RE'
+  } else if (url.includes('https://www.teepublic.com')) {
+    return 'TE'
+  } else if (url.includes('https://www.amazon.com')) {
+    return 'AM'
   } else {
     return ''
   }
+}
+
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
