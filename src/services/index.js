@@ -51,6 +51,9 @@ export const startCheck = async (params) => {
           `page=${pageCheck}`
         )
         try {
+          await page.goto('https://www.google.com/', {
+            waitUntil: 'domcontentloaded'
+          })
           await page.goto(store, {
             waitUntil: 'domcontentloaded'
           })
@@ -160,7 +163,9 @@ export const startCheck = async (params) => {
           continue
         }
         try {
-          await page.goto('https://www.google.com/')
+          await page.goto('https://www.google.com/', {
+            waitUntil: 'domcontentloaded'
+          })
           await page.goto(element.link, {
             waitUntil: 'domcontentloaded'
           })

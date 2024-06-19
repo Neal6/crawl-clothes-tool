@@ -66,7 +66,7 @@ function App() {
           color: w['Color (+)']?.toString()?.trim(),
           size: w['Clothing Size']?.toString()?.trim(),
           swatchImg: w['Swatch Image URL']?.toString()?.trim(),
-          addImg:w['Additional Image URL (+)']?.toString()?.trim()
+          addImg: w['Additional Image URL (+)']?.toString()?.trim()
         }
       })
       document.querySelector('.price-file-name').innerHTML = file.name
@@ -583,6 +583,167 @@ function App() {
         'Site Start Date'
       ],
       [
+        '',
+        'productName',
+        'productIdType',
+        'productId',
+        'price',
+        'brand',
+        'ShippingWeight',
+        'mainImageUrl',
+        'shortDescription',
+        'jeanStyle',
+        'sockSize',
+        'character',
+        'clothingWeight',
+        'globalBrandLicense',
+        'weather',
+        'season',
+        'pantRise',
+        'sweaterStyle',
+        'warrantyText',
+        'seasonCode',
+        'isSet',
+        'skirtLengthStyle',
+        'braStyle',
+        'jacketStyle',
+        'braCupSize',
+        'suitBreastingStyle',
+        'outerwearCoatJacketAnVestType',
+        'measure',
+        'unit',
+        'clothingTopStyle',
+        'fastenerType',
+        'pantLegCut',
+        'clothingLengthStyle',
+        'hosieryStyle',
+        'shoeSize',
+        'gender',
+        'activity',
+        'pattern',
+        'gotsCertification',
+        'jeanFinish',
+        'tShirtType',
+        'swimsuitStyle',
+        'manufacturer',
+        'countPerPack',
+        'legOpeningCut',
+        'productAttributeName',
+        'productAttributeValue',
+        'measure',
+        'unit',
+        'fabricCareInstructions',
+        'dressShirtSize',
+        'msrp',
+        'sockRise',
+        'theme',
+        'productSecondaryImageURL',
+        'productSecondaryImageURL',
+        'productSecondaryImageURL',
+        'productSecondaryImageURL',
+        'academicInstitution',
+        'modelNumber',
+        'measure',
+        'unit',
+        'smallPartsWarnings',
+        'clothingFit',
+        'upperBodyStrapConfiguration',
+        'sportsLeague',
+        'beltStyle',
+        'waistStyle',
+        'pantyStyle',
+        'sockStyle',
+        'clothingCut',
+        'scarfStyle',
+        'pantStyle',
+        'pieceCount',
+        'measure',
+        'unit',
+        'features',
+        'pantFit',
+        'braSize',
+        'seasonYear',
+        'hatSize',
+        'athlete',
+        'clothingStyle',
+        'sleeveStyle',
+        'shortsStyle',
+        'accentColor',
+        'hatStyle',
+        'tightsSheerness',
+        'count',
+        'jeanWash',
+        'underwearStyle',
+        'ageGroup',
+        'manufacturerPartNumber',
+        'autographedBy',
+        'countryOfOriginTextiles',
+        'warrantyURL',
+        'prop65WarningText',
+        'occasion',
+        'underpantsType',
+        'color',
+        'dressStyle',
+        'keyFeatures',
+        'keyFeatures',
+        'keyFeatures',
+        'shirtNeckStyle',
+        'materialName',
+        'materialPercentage',
+        'skirtAndDressCut',
+        'clothingSize',
+        'collarType',
+        'measure',
+        'unit',
+        'pajamaType',
+        'measure',
+        'unit',
+        'clothingSizeGroup',
+        'isMaternity',
+        'recycledMaterial',
+        'percentageOfRecycledMaterial',
+        'colorCategory',
+        'pantSize',
+        'pantySize',
+        'beltBuckleStyle',
+        'material',
+        'sleeveLengthStyle',
+        'measure',
+        'unit',
+        'sportsTeam',
+        'sport',
+        'variantGroupId',
+        'variantAttributeNames',
+        'variantAttributeNames',
+        'swatchVariantAttribute',
+        'swatchImageUrl',
+        'isPrimaryVariant',
+        'batteryTechnologyType',
+        'endDate',
+        'externalProductIdType',
+        'externalProductId',
+        'stateRestrictionsText',
+        'states',
+        'zipCodes',
+        'MustShipAlone',
+        'SkuUpdate',
+        'pricePerUnitQuantity',
+        'pricePerUnitUom',
+        'multipackQuantity',
+        'additionalOfferAttributeName',
+        'additionalOfferAttributeValue',
+        'electronicsIndicator',
+        'shipsInOriginalPackaging',
+        'pickupAndLocalDeliveryDepth',
+        'pickupAndLocalDeliveryWidth',
+        'pickupAndLocalDeliveryHeight',
+        'pickupAndLocalDeliveryWeight',
+        'chemicalAerosolPesticide',
+        'fulfillmentLagTime',
+        'ProductIdUpdate',
+        'startDate'
+      ],
+      [
         `Alphanumeric, 50 characters - The string of letters and/or numbers a partner uses to identify the item. Walmart includes this value in all communications regarding item information such as orders. Example: TRVAL28726`,
         `Alphanumeric, 200 characters - Title of the product to be displayed on the Item Page. The standard form is: Brand + Defining Qualities + Item Name + Pack Count, if applicable. Example: George Girls' Short-Sleeve Polo`,
         `Closed List - UPC: GTIN-12, the 12-digit number including check-digit. If less than 12-digits, such as UPC-E which is 8-digits, add leading zeros up to 12-digits.; GTIN: GTIN-14, the 14-digit number including check-digit. If less than 14-digits add leading zeros up to 14-digits. ISBN: International Standard Book Number, the 10 or 13-digit number including check-digit.; EAN: GTIN-13, the 13-digit number including check-digit. If less than 13-digits add leading zeros up to 13-digits.`,
@@ -886,7 +1047,7 @@ Image URLs should end in an image file type (.jpg) to follow best practices. The
           'clothingSize',
           'color',
           'color',
-          'https://pod1102.s3.ap-southeast-2.amazonaws.com/BLACK.jpg',
+          prices[j]?.swatchImg,
           j === 0 ? 'Yes' : 'No',
           '',
           '',
@@ -999,6 +1160,14 @@ Image URLs should end in an image file type (.jpg) to follow best practices. The
       const cellAddress = XLSX.utils.encode_cell({ r: 3, c: col })
       if (!worksheet[cellAddress]) worksheet[cellAddress] = {} // Ensure the cell exists
       worksheet[cellAddress].s = {
+        font: { bold: true },
+        alignment: { horizontal: 'center', vertical: 'center' }
+      }
+    }
+    for (let col = 0; col < columnCount; col++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: 4, c: col })
+      if (!worksheet[cellAddress]) worksheet[cellAddress] = {} // Ensure the cell exists
+      worksheet[cellAddress].s = {
         font: { color: { rgb: 'ababab' } }
       }
     }
@@ -1035,7 +1204,7 @@ Image URLs should end in an image file type (.jpg) to follow best practices. The
     // Create a Blob from the array buffer and trigger the download
     const blob = new Blob([s2ab(workbookBinary)], { type: 'application/octet-stream' })
     setLoading(false)
-    saveAs(blob, `data-crawl-${formatDateExcel(new Date())}.xlsx`)
+    saveAs(blob, `DATA-CÀO-${dataProductsFormat[0].wsn}-${formatDateExcel(new Date())}.xlsx`)
   }
 
   const formatDate = (date) => {
@@ -1054,23 +1223,21 @@ Image URLs should end in an image file type (.jpg) to follow best practices. The
     var day = date.getDate().toString().padStart(2, '0')
     var month = (date.getMonth() + 1).toString().padStart(2, '0') // Months are zero-based
     var year = date.getFullYear().toString().slice(-2)
-    const hour = date.getHours(); // returns 0-23
+    const hour = date.getHours() // returns 0-23
 
     // Get the current minute
-    const minute = date.getMinutes(); // returns 0-59
-    
+    const minute = date.getMinutes() // returns 0-59
+
     // Get the current second
-    const second = date.getSeconds(); // returns 0-59
-    
+    const second = date.getSeconds() // returns 0-59
+
     // Get the current millisecond
-    const millisecond = date.getMilliseconds(); // returns 0-999
+    const millisecond = date.getMilliseconds() // returns 0-999
     // Construct the formatted date string in "DD/MM/YY" format
     var formattedDate = `${day}-${month}-${year}-${hour}-${minute}-${second}-${millisecond}`
 
     return formattedDate
   }
-
-
 
   return (
     <div className="con tainer">
