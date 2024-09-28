@@ -58,12 +58,7 @@ export const startCheck = async (params) => {
             waitUntil: 'domcontentloaded'
           })
         } catch (error) {}
-        if (websiteName === 'ET') {
-          await page.type('#global-enhancements-search-query', Math.random().toString())
-          await delay(1000)
-        }
         const products = await page.evaluate((ws) => {
-          window.scrollTo(0, document.body.scrollHeight)
           switch (ws) {
             case 'ET': {
               const imgProducts = document.querySelectorAll(
@@ -153,6 +148,11 @@ export const startCheck = async (params) => {
         ]
         if (products.length > 0) {
           pageCheck++
+          if (websiteName === 'ET') {
+            await page.type('#global-enhancements-search-query', Math.random().toString())
+            await page.click('.global-enhancements-search-input-btn-group__btn')
+            await delay(1000)
+          }
         } else {
           isDoneStore = true
         }

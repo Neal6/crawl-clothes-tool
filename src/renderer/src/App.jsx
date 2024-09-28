@@ -3,7 +3,6 @@ import * as XLSX from 'xlsx-js-style'
 import { saveAs } from 'file-saver'
 import firstSheetJson from './sheet_one_json.json'
 function App() {
-  const [skuTyping, setSkuTyping] = useState('')
   const [stores, setStores] = useState([])
   const [prices, setPrices] = useState([])
   const [filters, setFilters] = useState([])
@@ -68,7 +67,8 @@ function App() {
           color: w['Color (+)']?.toString()?.trim(),
           size: w['Clothing Size']?.toString()?.trim(),
           swatchImg: w['Swatch Image URL']?.toString()?.trim(),
-          addImg: w['Additional Image URL (+)']?.toString()?.trim()
+          addImg: w['Additional Image URL (+)']?.toString()?.trim(),
+          sku2: w['SKU 2']?.toString()?.trim()
         }
       })
       document.querySelector('.price-file-name').innerHTML = file.name
@@ -961,7 +961,7 @@ Image URLs should end in an image file type (.jpg) to follow best practices. The
           '',
           '',
           '',
-          `${skuTyping ? `${skuTyping}-` : ''}${element.wsn}-${element.id}-${formatDate(new Date())}-${j + 1}`,
+          `${prices[j]?.sku2 ? `${prices[j].sku2}-` : ''}${element.wsn}-${element.id}-${formatDate(new Date())}-${j + 1}`,
           `${element.title} T-Shirt Hoodie`,
           'GTIN',
           'CUSTOM',
@@ -1312,15 +1312,6 @@ Image URLs should end in an image file type (.jpg) to follow best practices. The
       <div className="form">
         <p className="title">UPLOAD FILE</p>
         <div>
-          <input
-            type="text"
-            id="sku"
-            placeholder="SKU"
-            value={skuTyping}
-            onChange={(e) => {
-              setSkuTyping(e.target.value)
-            }}
-          />
           <div className="formbold-mb-5 formbold-file-input">
             <input type="file" name="store" id="store" onChange={handleUploadStore} />
             <label htmlFor="store">
