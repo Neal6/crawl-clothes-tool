@@ -58,8 +58,12 @@ export const startCheck = async (params) => {
             waitUntil: 'domcontentloaded'
           })
         } catch (error) {}
-
+        if (websiteName === 'ET') {
+          await page.type('#global-enhancements-search-query', Math.random().toString())
+          await delay(1000)
+        }
         const products = await page.evaluate((ws) => {
+          window.scrollTo(0, document.body.scrollHeight)
           switch (ws) {
             case 'ET': {
               const imgProducts = document.querySelectorAll(
@@ -103,7 +107,7 @@ export const startCheck = async (params) => {
             }
             case 'TE': {
               const imgProducts = document.querySelectorAll(
-                '.m-store__tiles .m-tiles__tile picture img'
+                '.m-store__tiles .tp-design-tile__image'
               )
               const productsDetail = []
               if (imgProducts.length > 0) {
@@ -111,7 +115,7 @@ export const startCheck = async (params) => {
                   const element = imgProducts[index]
                   productsDetail.push({
                     title: element.alt,
-                    id: element.closest('.m-tiles__tile')?.getAttribute('data-id'),
+                    id: element.closest('.tp-design-tile')?.getAttribute('data-id'),
                     link: element.closest('a').href
                   })
                 }
@@ -170,6 +174,7 @@ export const startCheck = async (params) => {
             waitUntil: 'domcontentloaded'
           })
           const imgProduct = await page.evaluate((ws) => {
+            window.scrollTo(0, document.body.scrollHeight)
             switch (ws) {
               case 'ET': {
                 return document.querySelector('#photos ul img.carousel-image')?.src || ''
@@ -199,6 +204,7 @@ export const startCheck = async (params) => {
             await delay(2000)
           }
           const imgProduct = await page.evaluate((ws) => {
+            window.scrollTo(0, document.body.scrollHeight)
             switch (ws) {
               case 'ET': {
                 return document.querySelector('#photos ul img.carousel-image')?.src || ''
@@ -227,8 +233,7 @@ export const startCheck = async (params) => {
       }
       allProduct = [...allProduct, [...productsThisStore]]
     }
-    await browser.close()
-
+    // await browser.close()
     return {
       status: 200,
       products: allProduct

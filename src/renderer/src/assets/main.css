@@ -69,6 +69,14 @@ code {
   margin-bottom: 8px;
 }
 
+#sku {
+  width: 100%;
+  margin-bottom: 16px;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px dashed #bfbfbf;
+}
+
 /* input upload */
 .formbold-mb-5 {
   margin-bottom: 20px;
@@ -83,7 +91,7 @@ code {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px 48px;
+  padding: 8px 48px;
   text-align: center;
   cursor: pointer;
   font-weight: bold;

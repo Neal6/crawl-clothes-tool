@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import * as XLSX from 'xlsx-js-style'
 import { saveAs } from 'file-saver'
-
+import firstSheetJson from './sheet_one_json.json'
 function App() {
+  const [skuTyping, setSkuTyping] = useState('')
   const [stores, setStores] = useState([])
   const [prices, setPrices] = useState([])
+  const [filters, setFilters] = useState([])
   const [loading, setLoading] = useState(false)
 
   const handleUploadStore = async (event) => {
@@ -78,6 +80,24 @@ function App() {
     // remove value file
     document.getElementById('store').value = null
   }
+  const handleUploadFilter = async (event) => {
+    const file = event.target.files[0]
+    const data = await file.arrayBuffer()
+    /* data is an ArrayBuffer */
+    const workbook = XLSX.read(data)
+    const sheetData = workbook.Sheets[workbook.SheetNames[0]]
+    const dataFromSheet = XLSX.utils.sheet_to_json(sheetData)
+    if (dataFromSheet.length > 0) {
+      const excelFilters = dataFromSheet.map((w) => w['Filter']?.toString()?.trim())
+      document.querySelector('.filter-file-name').innerHTML = file.name
+      setFilters(excelFilters)
+    } else {
+      window.electron.ipcRenderer.send('data-upload-invalid')
+    }
+
+    // remove value file
+    document.getElementById('filter').value = null
+  }
 
   const handleCheck = async () => {
     if (stores.length < 1 || prices.length < 1) {
@@ -94,12 +114,24 @@ function App() {
   }
 
   const downloadFile = (products) => {
-    const dataProductsFormat = products.filter((p) => !!p.imgLink)
+    const dataProductsFormat = products
+      .filter((p) => !!p.imgLink)
+      .filter((p) => {
+        if (filters.find((f) => !!p.title.match(new RegExp(f, 'gi')))) {
+          return false
+        }
+        return true
+      })
+    console.log(dataProductsFormat)
     let wb = XLSX.utils.book_new()
 
     // Create a new worksheet
     let worksheet_data = [
+      ['Version=4.8,marketplace,clothing_other,en,external,Clothing'],
       [
+        '',
+        '',
+        '',
         'SKU',
         'Required to sell on Walmart.com',
         '',
@@ -263,6 +295,9 @@ function App() {
       [
         '',
         '',
+        '',
+        '',
+        '',
         'Product Identifiers (productIdentifiers)',
         '',
         '',
@@ -422,6 +457,9 @@ function App() {
         ''
       ],
       [
+        '',
+        '',
+        '',
         '',
         'Product Name',
         'Product ID Type',
@@ -584,6 +622,9 @@ function App() {
       ],
       [
         '',
+        '',
+        '',
+        'sku',
         'productName',
         'productIdType',
         'productId',
@@ -744,6 +785,9 @@ function App() {
         'startDate'
       ],
       [
+        '',
+        '',
+        '',
         `Alphanumeric, 50 characters - The string of letters and/or numbers a partner uses to identify the item. Walmart includes this value in all communications regarding item information such as orders. Example: TRVAL28726`,
         `Alphanumeric, 200 characters - Title of the product to be displayed on the Item Page. The standard form is: Brand + Defining Qualities + Item Name + Pack Count, if applicable. Example: George Girls' Short-Sleeve Polo`,
         `Closed List - UPC: GTIN-12, the 12-digit number including check-digit. If less than 12-digits, such as UPC-E which is 8-digits, add leading zeros up to 12-digits.; GTIN: GTIN-14, the 14-digit number including check-digit. If less than 14-digits add leading zeros up to 14-digits. ISBN: International Standard Book Number, the 10 or 13-digit number including check-digit.; EAN: GTIN-13, the 13-digit number including check-digit. If less than 13-digits add leading zeros up to 13-digits.`,
@@ -914,7 +958,10 @@ Image URLs should end in an image file type (.jpg) to follow best practices. The
     dataProductsFormat.forEach((element) => {
       for (let j = 0; j < prices.length; j++) {
         worksheet_data.push([
-          `${element.wsn}-${element.id}-${formatDate(new Date())}-${j + 1}`,
+          '',
+          '',
+          '',
+          `${skuTyping ? `${skuTyping}-` : ''}${element.wsn}-${element.id}-${formatDate(new Date())}-${j + 1}`,
           `${element.title} T-Shirt Hoodie`,
           'GTIN',
           'CUSTOM',
@@ -1082,62 +1129,62 @@ Image URLs should end in an image file type (.jpg) to follow best practices. The
 
     // merge cell
     worksheet['!merges'] = [
-      { s: { r: 0, c: 1 }, e: { r: 0, c: 6 } },
-      { s: { r: 0, c: 7 }, e: { r: 0, c: 8 } },
-      { s: { r: 0, c: 9 }, e: { r: 0, c: 128 } },
-      { s: { r: 0, c: 129 }, e: { r: 0, c: 134 } },
-      { s: { r: 0, c: 135 }, e: { r: 0, c: 158 } },
-      { s: { r: 0, c: 0 }, e: { r: 2, c: 0 } },
-      { s: { r: 1, c: 2 }, e: { r: 1, c: 3 } },
-      { s: { r: 1, c: 27 }, e: { r: 1, c: 28 } },
-      { s: { r: 1, c: 45 }, e: { r: 1, c: 46 } },
-      { s: { r: 1, c: 47 }, e: { r: 1, c: 48 } },
-      { s: { r: 1, c: 60 }, e: { r: 1, c: 61 } },
-      { s: { r: 1, c: 74 }, e: { r: 1, c: 75 } },
-      { s: { r: 1, c: 105 }, e: { r: 1, c: 106 } },
-      { s: { r: 1, c: 110 }, e: { r: 1, c: 111 } },
-      { s: { r: 1, c: 113 }, e: { r: 1, c: 114 } },
-      { s: { r: 1, c: 117 }, e: { r: 1, c: 118 } },
-      { s: { r: 1, c: 125 }, e: { r: 1, c: 126 } },
-      { s: { r: 1, c: 132 }, e: { r: 1, c: 133 } },
-      { s: { r: 1, c: 137 }, e: { r: 1, c: 138 } },
-      { s: { r: 1, c: 139 }, e: { r: 1, c: 140 } },
-      { s: { r: 1, c: 144 }, e: { r: 1, c: 145 } },
-      { s: { r: 1, c: 147 }, e: { r: 1, c: 148 } },
-      { s: { r: 1, c: 151 }, e: { r: 1, c: 154 } }
+      { s: { r: 1, c: 4 }, e: { r: 1, c: 9 } },
+      { s: { r: 1, c: 10 }, e: { r: 1, c: 11 } },
+      { s: { r: 1, c: 12 }, e: { r: 1, c: 131 } },
+      { s: { r: 1, c: 132 }, e: { r: 1, c: 137 } },
+      { s: { r: 1, c: 138 }, e: { r: 1, c: 161 } },
+      { s: { r: 1, c: 3 }, e: { r: 4, c: 3 } },
+      { s: { r: 2, c: 5 }, e: { r: 2, c: 6 } },
+      { s: { r: 2, c: 30 }, e: { r: 2, c: 31 } },
+      { s: { r: 2, c: 48 }, e: { r: 2, c: 49 } },
+      { s: { r: 2, c: 50 }, e: { r: 2, c: 51 } },
+      { s: { r: 2, c: 63 }, e: { r: 2, c: 64 } },
+      { s: { r: 2, c: 77 }, e: { r: 2, c: 78 } },
+      { s: { r: 2, c: 108 }, e: { r: 2, c: 109 } },
+      { s: { r: 2, c: 113 }, e: { r: 2, c: 114 } },
+      { s: { r: 2, c: 116 }, e: { r: 2, c: 117 } },
+      { s: { r: 2, c: 120 }, e: { r: 2, c: 121 } },
+      { s: { r: 2, c: 128 }, e: { r: 2, c: 129 } },
+      { s: { r: 2, c: 135 }, e: { r: 2, c: 136 } },
+      { s: { r: 2, c: 140 }, e: { r: 2, c: 141 } },
+      { s: { r: 2, c: 142 }, e: { r: 2, c: 143 } },
+      { s: { r: 2, c: 147 }, e: { r: 2, c: 148 } },
+      { s: { r: 2, c: 150 }, e: { r: 2, c: 151 } },
+      { s: { r: 2, c: 154 }, e: { r: 2, c: 157 } }
     ]
     let colCount = [...Array(159).keys()]
-    worksheet['!cols'] = colCount.map((a) => ({
-      wpx: 250
+    worksheet['!cols'] = colCount.map((a, index) => ({
+      wpx: index < 3 ? 50 : 250
     }))
 
     // color
-    worksheet['A1'].s = {
+    worksheet['D2'].s = {
       font: { bold: true, sz: 14 },
       fill: { fgColor: { rgb: 'FFFF00' } },
       alignment: { horizontal: 'center', vertical: 'center' }
     }
-    worksheet['B1'].s = {
+    worksheet['E2'].s = {
       font: { bold: true, sz: 14, color: { rgb: 'FFFFFF' } },
       fill: { fgColor: { rgb: '008dff' } },
       alignment: { horizontal: 'left', vertical: 'center' }
     }
-    worksheet['H1'].s = {
+    worksheet['K2'].s = {
       font: { bold: true, sz: 14, color: { rgb: 'FFFFFF' } },
       fill: { fgColor: { rgb: '22db16' } },
       alignment: { horizontal: 'left', vertical: 'center' }
     }
-    worksheet['J1'].s = {
+    worksheet['M2'].s = {
       font: { bold: true, sz: 14, color: { rgb: 'FFFFFF' } },
       fill: { fgColor: { rgb: 'e57f16' } },
       alignment: { horizontal: 'left', vertical: 'center' }
     }
-    worksheet['DZ1'].s = {
+    worksheet['EC2'].s = {
       font: { bold: true, sz: 14, color: { rgb: 'FFFFFF' } },
       fill: { fgColor: { rgb: '063fe1' } },
       alignment: { horizontal: 'left', vertical: 'center' }
     }
-    worksheet['EF1'].s = {
+    worksheet['EI2'].s = {
       font: { bold: true, sz: 14, color: { rgb: 'FFFFFF' } },
       fill: { fgColor: { rgb: '757575' } },
       alignment: { horizontal: 'left', vertical: 'center' }
@@ -1148,14 +1195,6 @@ Image URLs should end in an image file type (.jpg) to follow best practices. The
 
     const columnCount = worksheet_data[0].length // Number of columns in the worksheet
 
-    for (let col = 0; col < columnCount; col++) {
-      const cellAddress = XLSX.utils.encode_cell({ r: 2, c: col })
-      if (!worksheet[cellAddress]) worksheet[cellAddress] = {} // Ensure the cell exists
-      worksheet[cellAddress].s = {
-        font: { bold: true },
-        alignment: { horizontal: 'center', vertical: 'center' }
-      }
-    }
     for (let col = 0; col < columnCount; col++) {
       const cellAddress = XLSX.utils.encode_cell({ r: 3, c: col })
       if (!worksheet[cellAddress]) worksheet[cellAddress] = {} // Ensure the cell exists
@@ -1168,6 +1207,14 @@ Image URLs should end in an image file type (.jpg) to follow best practices. The
       const cellAddress = XLSX.utils.encode_cell({ r: 4, c: col })
       if (!worksheet[cellAddress]) worksheet[cellAddress] = {} // Ensure the cell exists
       worksheet[cellAddress].s = {
+        font: { bold: true },
+        alignment: { horizontal: 'center', vertical: 'center' }
+      }
+    }
+    for (let col = 0; col < columnCount; col++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: 5, c: col })
+      if (!worksheet[cellAddress]) worksheet[cellAddress] = {} // Ensure the cell exists
+      worksheet[cellAddress].s = {
         font: { color: { rgb: 'ababab' } }
       }
     }
@@ -1175,7 +1222,7 @@ Image URLs should end in an image file type (.jpg) to follow best practices. The
     // style col
     for (let row = 0; row < worksheet_data.length; row++) {
       // Adjust the range as needed
-      const cellAddress = XLSX.utils.encode_cell({ r: row, c: 0 })
+      const cellAddress = XLSX.utils.encode_cell({ r: row, c: 3 })
       if (worksheet[cellAddress]) {
         worksheet[cellAddress].s = {
           fill: {
@@ -1186,10 +1233,14 @@ Image URLs should end in an image file type (.jpg) to follow best practices. The
     }
 
     // Append the worksheet to the wb
-    XLSX.utils.book_append_sheet(wb, worksheet, 'Sheet1')
+    const ws1 = XLSX.utils.aoa_to_sheet(firstSheetJson)
+    removeEmptyCells(ws1)
+    removeEmptyCells(worksheet)
+    XLSX.utils.book_append_sheet(wb, ws1, 'Hidden_clothing_other')
+    XLSX.utils.book_append_sheet(wb, worksheet, 'Clothing')
 
     // Write the wb to a binary string
-    const workbookBinary = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' })
+    const workbookBinary = XLSX.write(wb, { bookType: 'xlsx', type: 'binary', compression: true })
 
     // Convert the binary string to an array buffer
     function s2ab(s) {
@@ -1205,6 +1256,23 @@ Image URLs should end in an image file type (.jpg) to follow best practices. The
     const blob = new Blob([s2ab(workbookBinary)], { type: 'application/octet-stream' })
     setLoading(false)
     saveAs(blob, `DATA-CÀO-${dataProductsFormat[0].wsn}-${formatDateExcel(new Date())}.xlsx`)
+  }
+
+  function removeEmptyCells(worksheet) {
+    const range = XLSX.utils.decode_range(worksheet['!ref'])
+    for (let R = range.s.r; R <= range.e.r; R++) {
+      for (let C = range.s.c; C <= range.e.c; C++) {
+        const cell_address = { c: C, r: R }
+        const cell_ref = XLSX.utils.encode_cell(cell_address)
+        const cell = worksheet[cell_ref]
+
+        if (cell && (cell.v === undefined || cell.v === null || cell.v === '')) {
+          delete worksheet[cell_ref]
+        }
+      }
+    }
+    // Cập nhật phạm vi của worksheet
+    worksheet['!ref'] = XLSX.utils.encode_range(range)
   }
 
   const formatDate = (date) => {
@@ -1244,6 +1312,15 @@ Image URLs should end in an image file type (.jpg) to follow best practices. The
       <div className="form">
         <p className="title">UPLOAD FILE</p>
         <div>
+          <input
+            type="text"
+            id="sku"
+            placeholder="SKU"
+            value={skuTyping}
+            onChange={(e) => {
+              setSkuTyping(e.target.value)
+            }}
+          />
           <div className="formbold-mb-5 formbold-file-input">
             <input type="file" name="store" id="store" onChange={handleUploadStore} />
             <label htmlFor="store">
@@ -1264,6 +1341,17 @@ Image URLs should end in an image file type (.jpg) to follow best practices. The
                 <span className="formbold-or"> OR </span>
                 <span className="formbold-browse"> BROWSE </span>
                 <p className="file-name price-file-name"></p>
+              </div>
+            </label>
+          </div>
+          <div className="formbold-mb-5 formbold-file-input">
+            <input type="file" name="filter" id="filter" onChange={handleUploadFilter} />
+            <label htmlFor="filter">
+              <div>
+                <span className="formbold-drop-file"> FILTER </span>
+                <span className="formbold-or"> OR </span>
+                <span className="formbold-browse"> BROWSE </span>
+                <p className="file-name filter-file-name"></p>
               </div>
             </label>
           </div>
