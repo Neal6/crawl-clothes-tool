@@ -130,5 +130,15 @@ ipcMain.handle('checkId', async () => {
 
 ipcMain.handle('startCheck', async (event, params) => {
   const dataChecked = await startCheck(params)
-  return dataChecked
+  const id = machineIdSync(true)
+  try {
+    await axios.get('https://crawl-clothes-tool-node-app.onrender.com/api/check', {
+      data: {
+        device: id
+      }
+    })
+    return dataChecked
+  } catch (error) {
+    app.quit()
+  }
 })
