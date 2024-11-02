@@ -190,3 +190,12 @@ code {
     filter: blur(1px);
   }
 }
+
+.start,
+.end {
+  padding: 12px;
+  border: 1px dashed #bfbfbf;
+  background-color: #fff;
+  outline: none;
+  border-radius: 8px;
+}

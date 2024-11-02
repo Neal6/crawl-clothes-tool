@@ -5,7 +5,7 @@ puppeteer.use(StealthPlugin())
 const ua =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36'
 export const startCheck = async (params) => {
-  const { stores } = params.data
+  const { stores, pageStart, pageEnd } = params.data
   const browser = await puppeteer.launch({
     headless: false
   })
@@ -42,6 +42,9 @@ export const startCheck = async (params) => {
     for (let index = 0; index < stores.length; index++) {
       let isDoneStore = false
       let pageCheck = 1
+      if (pageStart !== '' && pageEnd !== '' && Number(pageEnd) > Number(pageStart)) {
+        pageCheck = Number(pageStart) === 0 ? 1 : Number(pageStart)
+      }
       let productsThisStore = []
 
       const websiteName = getWebsiteFromUrl(stores[index]?.store)
@@ -51,9 +54,10 @@ export const startCheck = async (params) => {
           `page=${pageCheck}`
         )
         try {
-          await page.goto('https://www.google.com/', {
-            waitUntil: 'domcontentloaded'
-          })
+          if (pageCheck % 5 === 0) {
+            await page.close()
+            page = await browser.newPage()
+          }
           await page.goto(store, {
             waitUntil: 'domcontentloaded'
           })
@@ -149,9 +153,13 @@ export const startCheck = async (params) => {
         if (products.length > 0) {
           pageCheck++
           if (websiteName === 'ET') {
-            await page.type('#global-enhancements-search-query', Math.random().toString())
+            await page.type('#global-enhancements-search-query', '1234567890987654321')
+            await delay(500)
             await page.click('.global-enhancements-search-input-btn-group__btn')
-            await delay(1000)
+            await delay(500)
+          }
+          if (pageEnd !== '' && pageStart !== '' && pageCheck > Number(pageEnd)) {
+            isDoneStore = true
           }
         } else {
           isDoneStore = true

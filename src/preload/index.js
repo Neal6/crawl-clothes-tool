@@ -3,7 +3,8 @@ import { electronAPI } from '@electron-toolkit/preload'
 
 // Custom APIs for renderer
 const api = {
-  startCheck: (params) => ipcRenderer.invoke('startCheck', { data: params })
+  startCheck: (params) => ipcRenderer.invoke('startCheck', { data: params }),
+  checkId: () => ipcRenderer.invoke('checkId')
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

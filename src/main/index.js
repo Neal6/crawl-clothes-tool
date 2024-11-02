@@ -1,11 +1,12 @@
 import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
+import { machineIdSync } from 'node-machine-id'
+import axios from 'axios'
 import icon from '../../resources/icon.png?asset'
 import { startCheck } from '../services'
 
-function createWindow() {
-  // Create the browser window.
+async function createWindow() {
   const mainWindow = new BrowserWindow({
     width: 900,
     height: 900,
@@ -20,10 +21,6 @@ function createWindow() {
 
   // mainWindow.webContents.openDevTools()
 
-  mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
-  })
-
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }
@@ -36,6 +33,10 @@ function createWindow() {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+
+  mainWindow.on('ready-to-show', () => {
+    mainWindow.show()
+  })
 }
 
 // This method will be called when Electron has finished
@@ -111,6 +112,20 @@ ipcMain.on('show-warning-no-find', () => {
     message: 'No keywords found',
     type: 'info'
   })
+})
+
+ipcMain.handle('checkId', async () => {
+  const id = machineIdSync(true)
+  try {
+    await axios.get('https://crawl-clothes-tool-node-app.onrender.com/api/check', {
+      data: {
+        device: id
+      }
+    })
+    return false
+  } catch (error) {
+    return id
+  }
 })
 
 ipcMain.handle('startCheck', async (event, params) => {

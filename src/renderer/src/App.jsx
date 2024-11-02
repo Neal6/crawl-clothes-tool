@@ -1,22 +1,46 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import * as XLSX from 'xlsx-js-style'
 import { saveAs } from 'file-saver'
 import firstSheetJson from './sheet_one_json.json'
 function App() {
+  const [firstLoading, setFirstLoading] = useState(true)
+  const [isPassId, setIsPassId] = useState(false)
+  const [id, setId] = useState('')
   const [stores, setStores] = useState([])
   const [prices, setPrices] = useState([])
   const [filters, setFilters] = useState([])
+  const [pageStart, setPageStart] = useState('')
+  const [pageEnd, setPageEnd] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleUploadStore = async (event) => {
+  const checkID = async () => {
+    const checkId = await window.api.checkId()
+    if (checkId) {
+      setId(checkId)
+      setIsPassId(false)
+    } else {
+      setIsPassId(true)
+    }
+    setFirstLoading(false)
+  }
+
+  useEffect(() => {
+    checkID()
+  }, [])
+
+  const handleUploadData = async (event) => {
     const file = event.target.files[0]
     const data = await file.arrayBuffer()
     /* data is an ArrayBuffer */
     const workbook = XLSX.read(data)
-    const sheetData = workbook.Sheets[workbook.SheetNames[0]]
-    const dataFromSheet = XLSX.utils.sheet_to_json(sheetData)
-    if (dataFromSheet.length > 0) {
-      const excelStores = dataFromSheet
+    const storeSheet = workbook.Sheets[workbook.SheetNames[0]]
+    const priceSheet = workbook.Sheets[workbook.SheetNames[1]]
+    const filterSheet = workbook.Sheets[workbook.SheetNames[2]]
+    const storeFromSheet = XLSX.utils.sheet_to_json(storeSheet)
+    const priceFromSheet = XLSX.utils.sheet_to_json(priceSheet)
+    if (storeFromSheet.length > 0) {
+      const filterFromSheet = XLSX.utils.sheet_to_json(filterSheet)
+      const excelStores = storeFromSheet
         .filter((d) => !!d['Store link'])
         .map((w) => {
           return {
@@ -42,25 +66,7 @@ function App() {
         }
       })
       let newStore = [...arrET, ...arrRE, ...arrTE, ...arrAM]
-      setStores(newStore)
-      document.querySelector('.store-file-name').innerHTML = file.name
-    } else {
-      window.electron.ipcRenderer.send('data-upload-invalid')
-    }
-
-    // remove value file
-    document.getElementById('store').value = null
-  }
-
-  const handleUploadPrice = async (event) => {
-    const file = event.target.files[0]
-    const data = await file.arrayBuffer()
-    /* data is an ArrayBuffer */
-    const workbook = XLSX.read(data)
-    const sheetData = workbook.Sheets[workbook.SheetNames[0]]
-    const dataFromSheet = XLSX.utils.sheet_to_json(sheetData)
-    if (dataFromSheet.length > 0) {
-      const excelPrices = dataFromSheet.map((w) => {
+      const excelPrices = priceFromSheet.map((w) => {
         return {
           stt: w['STT SKU']?.toString()?.trim(),
           price: w['Selling Price']?.toString()?.trim(),
@@ -71,32 +77,17 @@ function App() {
           sku2: w['SKU 2']?.toString()?.trim()
         }
       })
-      document.querySelector('.price-file-name').innerHTML = file.name
+      const excelFilters = filterFromSheet.map((w) => w['Filter']?.toString()?.trim())
+      setStores(newStore)
       setPrices(excelPrices)
+      setFilters(excelFilters)
+      document.querySelector('.store-file-name').innerHTML = file.name
     } else {
       window.electron.ipcRenderer.send('data-upload-invalid')
     }
 
     // remove value file
     document.getElementById('store').value = null
-  }
-  const handleUploadFilter = async (event) => {
-    const file = event.target.files[0]
-    const data = await file.arrayBuffer()
-    /* data is an ArrayBuffer */
-    const workbook = XLSX.read(data)
-    const sheetData = workbook.Sheets[workbook.SheetNames[0]]
-    const dataFromSheet = XLSX.utils.sheet_to_json(sheetData)
-    if (dataFromSheet.length > 0) {
-      const excelFilters = dataFromSheet.map((w) => w['Filter']?.toString()?.trim())
-      document.querySelector('.filter-file-name').innerHTML = file.name
-      setFilters(excelFilters)
-    } else {
-      window.electron.ipcRenderer.send('data-upload-invalid')
-    }
-
-    // remove value file
-    document.getElementById('filter').value = null
   }
 
   const handleCheck = async () => {
@@ -106,7 +97,9 @@ function App() {
     }
     setLoading(true)
     const dataChecked = await window.api.startCheck({
-      stores
+      stores,
+      pageStart,
+      pageEnd
     })
     dataChecked.products.forEach((p) => {
       downloadFile(p)
@@ -1309,48 +1302,59 @@ Image URLs should end in an image file type (.jpg) to follow best practices. The
 
   return (
     <div className="con tainer">
-      <div className="form">
-        <p className="title">UPLOAD FILE</p>
+      {!firstLoading && !isPassId && (
         <div>
-          <div className="formbold-mb-5 formbold-file-input">
-            <input type="file" name="store" id="store" onChange={handleUploadStore} />
-            <label htmlFor="store">
-              <div>
-                <span className="formbold-drop-file"> STORE </span>
-                <span className="formbold-or"> OR </span>
-                <span className="formbold-browse"> BROWSE </span>
-                <p className="file-name store-file-name"></p>
-              </div>
-            </label>
-          </div>
-          <div id="line"></div>
-          <div className="formbold-mb-5 formbold-file-input">
-            <input type="file" name="price" id="price" onChange={handleUploadPrice} />
-            <label htmlFor="price">
-              <div>
-                <span className="formbold-drop-file"> PRICE </span>
-                <span className="formbold-or"> OR </span>
-                <span className="formbold-browse"> BROWSE </span>
-                <p className="file-name price-file-name"></p>
-              </div>
-            </label>
-          </div>
-          <div className="formbold-mb-5 formbold-file-input">
-            <input type="file" name="filter" id="filter" onChange={handleUploadFilter} />
-            <label htmlFor="filter">
-              <div>
-                <span className="formbold-drop-file"> FILTER </span>
-                <span className="formbold-or"> OR </span>
-                <span className="formbold-browse"> BROWSE </span>
-                <p className="file-name filter-file-name"></p>
-              </div>
-            </label>
-          </div>
+          <input
+            type="text"
+            value={id}
+            style={{
+              padding: '12px 16px',
+              width: 400,
+              border: '1px solid #c1c1c1',
+              borderRadius: 8,
+              textAlign: 'center'
+            }}
+          />
         </div>
-        <button className="btn-submit" onClick={handleCheck}>
-          START CHECK
-        </button>
-      </div>
+      )}
+      {!firstLoading && isPassId && (
+        <div className="form">
+          <p className="title">UPLOAD FILE</p>
+          <div>
+            <div className="formbold-mb-5 formbold-file-input">
+              <input type="file" name="store" id="store" onChange={handleUploadData} />
+              <label htmlFor="store">
+                <div>
+                  <span className="formbold-drop-file"> DATA </span>
+                  <span className="formbold-or"> OR </span>
+                  <span className="formbold-browse"> BROWSE </span>
+                  <p className="file-name store-file-name"></p>
+                </div>
+              </label>
+            </div>
+            <div id="line"></div>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <input
+              type="text"
+              className="start"
+              placeholder="trang bắt đầu"
+              value={pageStart}
+              onChange={(e) => setPageStart(e.target.value)}
+            />
+            <input
+              type="text"
+              className="end"
+              placeholder="trang kết thúc"
+              value={pageEnd}
+              onChange={(e) => setPageEnd(e.target.value)}
+            />
+          </div>
+          <button className="btn-submit" onClick={handleCheck}>
+            START CHECK
+          </button>
+        </div>
+      )}
       {loading && (
         <div className="loading">
           <div className="waviy">
