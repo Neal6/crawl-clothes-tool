@@ -108,14 +108,26 @@ function App() {
 
   const downloadFile = (products) => {
     const dataProductsFormat = products
-      .filter((p) => !!p.imgLink)
+      .filter((p) => !!p.imgLink && !!p.title)
       .filter((p) => {
-        if (filters.find((f) => !!p.title.match(new RegExp(f, 'gi')))) {
+        if (
+          filters.find((f) => {
+            if (f.split(' ').length > 1 && !!p.title.match(new RegExp(f, 'gi'))) {
+              return true
+            }
+            if (f.split(' ').length <= 1) {
+              if (p.title.split(' ').includes(f)) {
+                return true
+              }
+            }
+            return false
+          })
+        ) {
           return false
         }
         return true
       })
-    console.log(dataProductsFormat)
+    console.log(products, dataProductsFormat)
     let wb = XLSX.utils.book_new()
 
     // Create a new worksheet
